@@ -30,17 +30,16 @@ from random import choice, randint
 #     Product(**item_ex).save()
 
 
+for i in range(5):
+    o = Category(**{
+            'title': f'root {i}',
+            'description': f'description by category number {i}'
+        }).save()
+    o.add_subcategory(Category(**{'title': f'sub {i}', 'description': f'description{i}'}))
 
-# for i in range (5):
-#     o = Category(**{
-#             'title': f'root {i}',
-#             'description': f'description by category number {i}'
-#         }).save()
-#     o.add_subcategory(Category(**{'title': f'sub {i}', 'description': f'description{i}'}))
+ob = Category.objects(parent__ne=None)
 
-# ob = Category.objects(parent__ne=None)
-#
-# for i in ob:
-#     i.add_subcategory(Category(**{'title': f'sub sub {i}', 'description': f'description{i}'}))
+for i in ob:
+    i.add_subcategory(Category(**{'title': f'sub sub {i}', 'description': f'description{i}'}))
 
 

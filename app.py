@@ -5,12 +5,25 @@ from telebot.types import (
     KeyboardButton,
     ReplyKeyboardMarkup,
 )
+from flask import Flask, request, abort
 import config
 import keyboards
 from keyboards import ReplyKB, InlineKB
 from models import models
 
 bot = telebot.TeleBot(config.TOKEN)
+app = Flask(__name__)
+
+# Process webhook calls
+@app.route(config.handle_url, methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    else:
+        abort(403)
 
 
 @bot.message_handler(commands=['start'])
