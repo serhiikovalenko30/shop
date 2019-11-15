@@ -102,4 +102,8 @@ def show_products_or_sub_categories(call):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    # bot.polling(none_stop=True)
+    import time
+    bot.remove_webhook()
+    time.sleep(1)
+    bot.set_webhook(config.webhook_url)
