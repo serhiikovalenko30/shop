@@ -71,7 +71,7 @@ def show_products_in_cart(message):
                                                f'Price: {product.get_price}')
 
     kb = telebot.types.InlineKeyboardMarkup()
-    button = telebot.types.InlineKeyboardButton(text='Купить', callback_data='bay_' + str(user.id))
+    button = telebot.types.InlineKeyboardButton(text='Купить', callback_data='buy_' + str(user.id))
     kb.add(button)
     bot.send_message(message.chat.id, text=f'Total sum: {cart.sum_product(user.id)}', reply_markup=kb)
 
@@ -184,8 +184,8 @@ def add_product_to_cart(call):
     bot.send_message(call.message.chat.id, f'{product.title} добавлен в корзину')
 
 
-@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'bay')
-def by_cart(call):
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'buy')
+def buy_cart(call):
     user = models.User.objects(user_id=str(call.from_user.id)).get()
     cart = models.Cart.objects(user=user.id, active=True).get()
 
