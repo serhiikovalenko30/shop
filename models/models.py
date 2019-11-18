@@ -51,6 +51,7 @@ class Product(Document):
     is_discount = BooleanField(default=False)
     properties = EmbeddedDocumentField(Properties)
     category = ReferenceField(Category)
+    photo = FileField()
 
     @property
     def get_price(self):
@@ -67,7 +68,38 @@ class User(Document):
     user_id = StringField(max_length=124)
     user_name = StringField(max_length=124)
 
+    @property
+    def get_cart(self):
+        return Cart.objects(user=self, active=True)
+
+    @property
+    def get_archive_cart(self):
+        return HistoryCart.objects(user=self)
+
 
 class Cart(Document):
     user = ReferenceField(User)
     product = ListField(ReferenceField(Product))
+    active = BooleanField(default=True)
+
+    def sum_product(self, user):
+        products_sum = 0
+        cart = Cart.objects(user=user, active=True).get()
+        for product in cart.product:
+            products_sum += float(product.get_price)
+        return products_sum
+
+    def add_product(self, obj):
+        # obj.parent = self
+        # obj.save()
+        self.product.append(obj)
+        self.save()
+
+
+class HistoryCart(Document):
+    user = ReferenceField(User)
+    cart = ListField(ReferenceField(Cart))
+
+    def add_cart(self, obj):
+        self.cart.append(obj)
+        self.save()

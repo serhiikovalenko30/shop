@@ -3,6 +3,8 @@ beginning_kb = {
     'products': 'Продукты',
     'sales': 'Продукты со скидкой',
     'about': 'Информация о магазине',
+    'cart': 'Корзина',
+    'cart_history': 'История заказов'
 }
 
 from telebot.types import (
