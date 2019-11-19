@@ -212,8 +212,7 @@ if __name__ == '__main__':
 
     bot.remove_webhook()
     time.sleep(1)
-    a = bot.set_webhook(config.webhook_url,
+    bot.set_webhook(config.webhook_url,
                         certificate=open('webhook_cert.pem', 'r'))
 
-    print(a)
     app.run(debug=True)
