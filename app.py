@@ -12,18 +12,18 @@ from keyboards import ReplyKB, InlineKB
 from models import models
 
 bot = telebot.TeleBot(config.TOKEN)
-# app = Flask(__name__)
+app = Flask(__name__)
 
 # Process webhook calls
-# @app.route('/', methods=['POST'])
-# def webhook():
-#     if request.headers.get('content-type') == 'application/json':
-#         json_string = request.get_data().decode('utf-8')
-#         update = telebot.types.Update.de_json(json_string)
-#         bot.process_new_updates([update])
-#         return ''
-#     else:
-#         abort(403)
+@app.route('/', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    else:
+        abort(403)
 
 
 @bot.message_handler(func=lambda message: message.text == 'Последнии новости')
@@ -201,9 +201,9 @@ def buy_cart(call):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    # bot.polling(none_stop=True)
     import time
-    # bot.remove_webhook()
-    # time.sleep(1)
-    # bot.set_webhook(config.webhook_url)
-    # app.run(debug=True)
+    bot.remove_webhook()
+    time.sleep(1)
+    bot.set_webhook(config.webhook_url)
+    app.run(debug=True)
