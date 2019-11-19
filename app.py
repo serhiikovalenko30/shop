@@ -14,6 +14,12 @@ from models import models
 bot = telebot.TeleBot(config.TOKEN)
 app = Flask(__name__)
 
+
+# Empty webserver index, return nothing, just http 200
+@app.route('/', methods=['GET', 'HEAD'])
+def index():
+    return ''
+
 # Process webhook calls
 @app.route('/', methods=['POST'])
 def webhook():
@@ -203,7 +209,11 @@ def buy_cart(call):
 if __name__ == '__main__':
     # bot.polling(none_stop=True)
     import time
+
     bot.remove_webhook()
     time.sleep(1)
-    bot.set_webhook(config.webhook_url)
+    a = bot.set_webhook(config.webhook_url,
+                        certificate=open('webhook_cert.pem', 'r'))
+
+    print(a)
     app.run(debug=True)
