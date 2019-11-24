@@ -92,9 +92,10 @@ def sales(message):
                                                     callback_data='cart_' + str(product.id))
         kb.add(button)
 
-        bot.send_message(message.chat.id, parse_mode='HTML', text=f'Title: {product.title}')
-        bot.send_photo(message.chat.id, product.photo.read(), parse_mode='HTML',
-                       caption=f'Description: {product.description}\n'
+        bot.send_photo(message.chat.id, product.photo.read(),
+                       parse_mode='HTML',
+                       caption=f'Title: {product.title}\n'
+                               f'Description: {product.description}\n'
                                f'Price: {product.get_price}',
                        reply_markup=kb)
 
@@ -143,9 +144,10 @@ def show_products_or_sub_categories(call):
                                                         callback_data='cart_' + str(product.id))
             kb.add(button)
 
-            bot.send_message(call.message.chat.id, parse_mode='HTML', text=f'Title: {product.title}')
-            bot.send_photo(call.message.chat.id, product.photo.read(), parse_mode='HTML',
-                           caption=f'Description: {product.description}\n'
+            bot.send_photo(call.message.chat.id, product.photo.read(),
+                           parse_mode='HTML',
+                           caption=f'Title: {product.title}\n'
+                                   f'Description: {product.description}\n'
                                    f'Price: {product.get_price}',
                            reply_markup=kb)
 
@@ -207,12 +209,13 @@ def buy_cart(call):
 
 
 if __name__ == '__main__':
-    # bot.polling(none_stop=True)
-    import time
-
     bot.remove_webhook()
-    time.sleep(1)
-    bot.set_webhook(config.webhook_url,
-                        certificate=open('webhook_cert.pem', 'r'))
-
-    app.run(debug=True)
+    bot.polling(none_stop=True)
+    # import time
+    #
+    # bot.remove_webhook()
+    # time.sleep(1)
+    # bot.set_webhook(config.webhook_url,
+    #                     certificate=open('webhook_cert.pem', 'r'))
+    #
+    # app.run(debug=True)
