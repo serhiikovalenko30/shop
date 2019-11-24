@@ -15,7 +15,7 @@ class CategorySchema(Schema):
     id = fields.String()
     title = fields.String()
     description = fields.String()
-    subcategory = fields.List(fields.Nested('self'))
+    subcategory = fields.Nested('self', many=True, only=('id', 'title'))
     parent = fields.Nested('self')
 
 
@@ -28,4 +28,4 @@ class ProductSchema(Schema):
     is_discount = fields.Boolean()
     properties = fields.Nested(PropertiesSchema)
     category = fields.Nested(CategorySchema)
-    photo = fields.Field()
+    photo = fields.String()  # dont work by image

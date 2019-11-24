@@ -33,7 +33,6 @@ class CategoryResource(Resource):
         return CategorySchema().dump(Category.objects(id=id).get())
 
     def post(self, id=None):
-
         if id:
             category = Category.objects(id=id).get()
             sub_category = Category(**request.json).save()
