@@ -8,7 +8,7 @@ from schemes.shop_schemes import TextsSchema, CategorySchema, ProductSchema
 class TextsResource(Resource):
     def get(self, id=None):
         if not id:
-            return TextsSchema().dump(Texts.objects, many=True)
+            return TextsSchema().dump(Texts.objects(), many=True)
         return TextsSchema().dump(Texts.objects(id=id).get())
 
     def post(self):
@@ -29,16 +29,10 @@ class TextsResource(Resource):
 class CategoryResource(Resource):
     def get(self, id=None):
         if not id:
-            return CategorySchema().dump(Category.objects, many=True)
+            return CategorySchema().dump(Category.objects(), many=True)
         return CategorySchema().dump(Category.objects(id=id).get())
 
-    def post(self, id=None):
-        if id:
-            category = Category.objects(id=id).get()
-            sub_category = Category(**request.json).save()
-            category.add_subcategory(sub_category)
-            return CategorySchema().dump(sub_category)
-
+    def post(self):
         item = Category(**request.json).save()
         return CategorySchema().dump(item)
 
@@ -56,12 +50,10 @@ class CategoryResource(Resource):
 class ProductResource(Resource):
     def get(self, id=None):
         if not id:
-            return ProductSchema().dump(Product.objects, many=True)
+            return ProductSchema().dump(Product.objects(), many=True)
         return ProductSchema().dump(Product.objects(id=id).get())
 
     def post(self):
-        category = request.json.pop('category')
-        request.json['category'] = Category.objects(id=(category['id'])).get()
         item = Product(**request.json).save()
         return ProductSchema().dump(item)
 

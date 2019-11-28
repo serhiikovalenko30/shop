@@ -67,6 +67,7 @@ class Product(Document):
 class User(Document):
     user_id = StringField(max_length=124)
     user_name = StringField(max_length=124)
+    is_block = BooleanField(default=False)
 
     @property
     def get_cart(self):
@@ -90,8 +91,6 @@ class Cart(Document):
         return products_sum
 
     def add_product(self, obj):
-        # obj.parent = self
-        # obj.save()
         self.product.append(obj)
         self.save()
 

@@ -7,6 +7,7 @@ from telebot.types import (
 )
 from flask import Flask, request, abort
 import config
+from cron import Cron
 import keyboards
 from keyboards import ReplyKB, InlineKB
 from models import models
@@ -53,9 +54,11 @@ def cart_history(message):
 
     carts_history = user.get_archive_cart
 
+    counter = 1
     for carts in carts_history:
         for cart in carts.cart:
-            bot.send_message(message.chat.id, text=f'Cart: {cart.id}')
+            bot.send_message(message.chat.id, text=f'Cart №{counter}')
+            counter += 1
             for products in cart.product:
                 product = models.Product.objects(id=products.id).get()
                 bot.send_message(message.chat.id, text=f'Title: {product.title}')
@@ -66,18 +69,28 @@ def show_products_in_cart(message):
     user = models.User.objects(user_id=str(message.from_user.id)).get()
 
     if not models.Cart.objects(user=user.id, active=True):
-        return bot.send_message(message.chat.id, text='У вас нет продуктов в корзине')
+        return bot.send_message(message.chat.id, text='У вас нет корзины')
 
     cart = models.Cart.objects(user=user.id, active=True).get()
 
+    if len(cart.product) == 0:
+        return bot.send_message(message.chat.id, text='У Вас пустая корзина')
+
     for products in cart.product:
         product = models.Product.objects(id=products.id).get()
-        bot.send_message(message.chat.id, text=f'Title: {product.title}\n'
-                                               f'Description: {product.description}\n'
-                                               f'Price: {product.get_price}')
+        keyboard = InlineKeyboardMarkup()
+        button = telebot.types.InlineKeyboardButton(text='Удалить товар',
+                                                    callback_data='del_' + str(products.id))
+        keyboard.add(button)
+
+        bot.send_message(message.chat.id,
+                         text=f'Title: {product.title}\n'
+                              f'Description: {product.description}\n'
+                              f'{"Price (sales):" if product.is_discount else "Price:"}  {product.get_price}',
+                         reply_markup=keyboard)
 
     kb = telebot.types.InlineKeyboardMarkup()
-    button = telebot.types.InlineKeyboardButton(text='Купить', callback_data='buy_' + str(user.id))
+    button = telebot.types.InlineKeyboardButton(text='Купить товары', callback_data='buy_' + str(user.id))
     kb.add(button)
     bot.send_message(message.chat.id, text=f'Total sum: {cart.sum_product(user.id)}', reply_markup=kb)
 
@@ -96,12 +109,16 @@ def sales(message):
                        parse_mode='HTML',
                        caption=f'Title: {product.title}\n'
                                f'Description: {product.description}\n'
-                               f'Price: {product.get_price}',
+                               f'{"Price (sales):" if product.is_discount else "Price:"}  {product.get_price}',
                        reply_markup=kb)
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
+
+    if not models.User.objects(user_id=str(message.from_user.id)):
+        models.User(**{'user_id': str(message.from_user.id), 'user_name': message.from_user.username}).save()
+
     greetings_str = models.Texts.objects(title='Greetings').get().body
     keyboard = ReplyKB().generate_kb(*keyboards.beginning_kb.values())
     bot.send_message(message.chat.id, greetings_str, reply_markup=keyboard)
@@ -148,7 +165,7 @@ def show_products_or_sub_categories(call):
                            parse_mode='HTML',
                            caption=f'Title: {product.title}\n'
                                    f'Description: {product.description}\n'
-                                   f'Price: {product.get_price}',
+                                   f'{"Price (sales):" if product.is_discount else "Price:"}  {product.get_price}',
                            reply_markup=kb)
 
 
@@ -177,11 +194,8 @@ def go_back(call):
 @bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'cart')
 def add_product_to_cart(call):
     product = models.Product.objects(id=call.data.split('_')[1]).get()
-
-    if not models.User.objects(user_id=str(call.from_user.id)):
-        models.User(**{'user_id': str(call.from_user.id), 'user_name': call.from_user.username}).save()
-
     user = models.User.objects(user_id=str(call.from_user.id)).get()
+
     if not user.get_cart:
         models.Cart(**{'user': user}).save()
 
@@ -208,14 +222,34 @@ def buy_cart(call):
     bot.send_message(call.message.chat.id, 'Корзина купленна')
 
 
+@bot.callback_query_handler(func=lambda call: call.data.split('_')[0] == 'del')
+def delete_product_by_cart(call):
+    user = models.User.objects(user_id=str(call.from_user.id)).get()
+    product = models.Product.objects(id=call.data.split('_')[1]).get()
+    models.Cart.objects(user=user.id, active=True).update_one(pull__product=product)  # deletes everything
+    bot.send_message(call.message.chat.id, text='Товар(ы) удален(ы)')
+
+
+@Cron.cron_decorator()
+def is_banned_check():
+    for user in models.User.objects():
+        try:
+            bot.send_chat_action(user.user_id, 'typing')
+            models.User.objects(user_id=user.user_id).update_one(set__is_block=False)
+        except telebot.apihelper.ApiException:
+            models.User.objects(user_id=user.user_id).update_one(set__is_block=True)
+
+
+cron = Cron(is_banned_check)
+
+
 if __name__ == '__main__':
+    import time
+
     bot.remove_webhook()
-    bot.polling(none_stop=True)
-    # import time
-    #
-    # bot.remove_webhook()
-    # time.sleep(1)
-    # bot.set_webhook(config.webhook_url,
-    #                     certificate=open('webhook_cert.pem', 'r'))
-    #
-    # app.run(debug=True)
+    time.sleep(1)
+    bot.set_webhook(config.webhook_url,
+                    certificate=open('webhook_cert.pem', 'r'))
+    cron.run()
+    app.run(debug=True)
+    # bot.polling(none_stop=True)

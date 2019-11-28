@@ -5,22 +5,22 @@ category = []
 
 for i in range(1, 3):
     category_ex = Category(**{
-            'title': f'root category {i}',
-            'description': f'description by root category {i}'
+            'title': f'root {i}',
+            'description': f'description root {i}'
         }).save()
     category.append(category_ex)
 
 for i in category:
     i.add_subcategory(Category(**{
-        'title': f'sub category by {i.title}',
-        'description': f'description by sub category {i.title}'
+        'title': f'sub||{i.title}',
+        'description': f'description sub'
     }))
 
 for i in Category.objects(parent__ne=None):
     for x in range(1, 3):
         i.add_subcategory(Category(**{
-            'title': f'sub-sub category by {i.title}',
-            'description': f'description by sub-sub category {i.title}'
+            'title': f'sub-sub||{i.title}',
+            'description': f'description sub-sub'
         }))
 
 subcategory = []
@@ -29,19 +29,30 @@ for i in Category.objects():
     if not i.is_parent:
         subcategory.append(i)
 
-for i in range(1, 20):
+for i in range(1, 18):
     item_ex = {
         'title': f'Product {i}',
-        'description': f'Description by product {i}',
-        'price': randint(100, 1000),
+        'description': f'Description {i}',
+        'price': randint(1000, 10000),
         'category': choice(subcategory),
     }
     Product(**item_ex).save()
 
+for i in range(18, 22):
+    price = randint(1000, 10000)
+    item_ex = {
+        'title': f'Product {i}',
+        'description': f'Description {i}',
+        'price': price,
+        'new_price': price * 0.5,
+        'is_discount': True,
+        'category': choice(subcategory),
+    }
+    Product(**item_ex).save()
 
 Texts(**{'title': 'Greetings', 'body': 'Welcome shop'}).save()
 
-Texts(**{'title': 'About', 'body': 'This shop is best'}).save()
+Texts(**{'title': 'About', 'body': 'This is shop  ... '}).save()
 
 for i in range(1, 6):
     news_ex = {

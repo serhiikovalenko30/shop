@@ -2,7 +2,7 @@ from marshmallow import fields, Schema, validates, ValidationError
 
 
 class PropertiesSchema(Schema):
-    weight = fields.String()
+    weight = fields.Float()
 
 
 class TextsSchema(Schema):
@@ -28,4 +28,4 @@ class ProductSchema(Schema):
     is_discount = fields.Boolean()
     properties = fields.Nested(PropertiesSchema)
     category = fields.Nested(CategorySchema)
-    photo = fields.String()  # dont work by image
+    # photo = fields.Field()  # dont work by image
