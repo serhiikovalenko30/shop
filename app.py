@@ -250,6 +250,6 @@ if __name__ == '__main__':
     time.sleep(1)
     bot.set_webhook(config.webhook_url,
                     certificate=open('webhook_cert.pem', 'r'))
-    # cron.run()
-    # app.run(debug=True)
+    cron.run()
+    app.run(debug=True)
     # bot.polling(none_stop=True)
